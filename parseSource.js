@@ -76,7 +76,7 @@ var parseSource = function(code, filename, where) {
   // true if we are inside // - this could be in code or block comment
   var inInlineComment = false;
   // mark if theres a whitespace before a inline comment
-  var markdownComment = false
+  var markdownComment = false;
   // true if we are inside "" in a code
   var inTextSingle = false;
   // true if we are inside '' in a code

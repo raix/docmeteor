@@ -58,14 +58,14 @@ module.exports = function(filename, documentElements, packageObject) {
         output.push(types[ti]);
       }
     }
-    return '{' + output.join('|') + '}'
+    return '{' + output.join('|') + '}';
   };
 
   var renderAST = function(ast, sourceFilename) {
     var headline = '';
     var body = '';
     var reference = '';
-    var level1 = '####';
+    var level1 = '###';
 
     var name = ast['@callback'] && ast['@callback'].name ||
             ast['@method'] && ast['@method'].name ||
@@ -91,13 +91,13 @@ module.exports = function(filename, documentElements, packageObject) {
     if (ast['@remote']) {
       prettyName = 'Meteor.method:' + prettyName;
     } else {
-      prettyName = (prettyName && isPrototype)? '*' + prettyName + '*.' + protoName : name;
+      prettyName = (prettyName)? '*' + prettyName + '*.' + protoName : name;
     }
 
     (scopes.length > 1)? scopes[scopes.length-2] == 'prototype': false;
 
     // Title can be a method or variable?
-    headline += '\n' + level1 + ' '; // '\n---\n###';
+    headline += '-\n\n' + level1 + ' ';
 
     headline += '<a name="' + name + '"></a>';
 
@@ -126,14 +126,13 @@ module.exports = function(filename, documentElements, packageObject) {
 
     headline += nbsp(2) + '<sub><i>' + ast['@where'] + '</i></sub>';
 
-    headline += ' ' + level1 + '\n';
+    headline += ' ' + level1 + '\n\n';
     
-    body += '-\n';
     var typeName = (ast['@method']?'method':(ast['@callback'])?'callback':'property');
 
     if (ast['@deprecated']) {
       body += '> __Warning!__\n';
-      body += '> This ' + typeName + ' "' + name + '" has deprecated from the api\n';
+      body += '> This ' + typeName + ' "' + name + '" has deprecated from the API\n';
       // add note from dev
       if (ast['@deprecated'] !== true && ast['@deprecated'].length) {
         body += '> ' + ast['@deprecated'] + '\n\n';
@@ -152,6 +151,16 @@ module.exports = function(filename, documentElements, packageObject) {
       var prototypeText = (ast['@prototype'] || isPrototype)? '`prototype` of ':'';
       body += '*This ' + typeName + ' __' + protoName + '__ is defined in ' + prototypeText + '`' + classNames.join('.') + '`*\n';
     }
+    
+    var ref = ast['@reference'];
+    if (ref) {
+      reference += '\n';
+      reference += '> ```';
+      reference += '' + ref.text + '';
+      reference += '```';
+      // Make a small link to the actual source
+      reference += ' [' + sourceFilename + ':' + ref.line + '](' + sourceFilename + '#L' + ref.line + ')\n';
+    }
 
     if (ast['@ejsontype']) {
       body += 'Adds custom EJSON-type: `' + ast['@ejsontype'].name + '` ';
@@ -163,59 +172,63 @@ module.exports = function(filename, documentElements, packageObject) {
       body += '\n__Arguments__\n\n';
 
       for (var i = 0; i < ast['@param'].length; i++) {
-        
+        var param = ast['@param'][i];
         // paramList.push(ast['@param'][i].name);
 
-        body += '* ';
-        body += '__' + ast['@param'][i].name + '__';
+        body += '* __' + param.name + '__';
 
-        body += ' *' + linkToType(ast['@param'][i].type || '{any}') + '*';
-        body += '  ';
+        body += ' *' + linkToType(param.type || '{any}') + '*  ';
 
-        if (ast['@param'][i]['default']) {
-          body += '  (Optional'
-          if (ast['@param'][i]['default']) body += ' = ' + ast['@param'][i]['default'];
-          body += ')';
-        } else if (ast['@param'][i].optional) { 
-          body += '  (Optional)';
+        if (param.default) {
+          body += '(Optional, Default = ' + param.default + ')';
+        } else if (param.optional) { 
+          body += '(Optional)';
         }  
         
         body += '\n';
 
-        if (ast['@param'][i].comment) {
-          if (ast['@param'][i].comment.slice(0, 1) === '-') {
-            ast['@param'][i].comment = ast['@param'][i].comment.slice(1);
+        if (param.comment) {
+          if (param.comment.slice(0, 1) === '-') {
+            param.comment = param.comment.slice(1);
           }
-          body += ast['@param'][i].comment + '\n';
+          if (param.comment.slice(0, 1) !== ' ') {
+            param.comment = ' ' + param.comment;
+          }
+          body += '\n' + param.comment + '\n\n';
         }
 
-        if (ast['@param'][i].children) {
-          var children = ast['@param'][i].children;
+        if (param.children) {
+          var children = param.children;
           for (var c = 0; c < children.length; c++) {
-            body += '    - ';
-            body += '__' + children[c].name + '__';
+            var child = children[c];
+            
+            body += '    * __' + child.name + '__';
 
-            body += ' *' + linkToType(children[c].type || '{any}') + '*';
-            body += '  ';
+            body += ' *' + linkToType(child.type || '{any}') + '*  ';
 
-            if (children[c]['default']) {
-              body += '  (Default = ' + children[c]['default'] + ')';
-            } else if (children[c].optional) {
-              body += '  (Optional)';
-            }  
+            if (child.default) {
+              body += '(Optional, Default = ' + child.default + ')';
+            } else if (child.optional) {
+              body += '(Optional)';
+            }
+            
             body += '\n';
-            if (children[c].comment) {
-              if (children[c].comment.slice(0, 1) === '-') {
-                children[c].comment = children[c].comment.slice(1);
+            
+            if (child.comment) {
+              if (child.comment.slice(0, 1) === '-') {
+                child.comment = child.comment.slice(1);
               }
-              body += children[c].comment + '\n';
+              body += '\n    ' + child.comment + '\n\n';
             }
           }
         }
 
       }
 
-      body += '\n-\n';
+      if (returns ||
+              (todo && !packageObject && todo.length > 0)) {
+        body += '\n-\n';
+      }
     }
 
     var returns = ast['@return'] || ast['@returns'];
@@ -227,7 +240,9 @@ module.exports = function(filename, documentElements, packageObject) {
       if (ast['@reactive']) body += '  __(is reactive)__';
       body += '\n';
       if (returns.comment) body += returns.comment + '\n';
-
+      if ((todo && !packageObject && todo.length > 0)) {
+        body += '\n-\n';
+      }
     }
 
     // If in the internal documentation show the todo list
@@ -241,19 +256,6 @@ module.exports = function(filename, documentElements, packageObject) {
       body += '```\n';
     }
 
-    var ref = ast['@reference'];
-    if (ref) {
-      reference += '\n';
-      reference += '> ```';
-      reference += '' + ref.text + '';
-      reference += '```';
-      // Make a small link to the actual source
-      reference += ' [' + sourceFilename + ':' + ref.line + '](' + sourceFilename + '#L' + ref.line + ')\n';
-    }
-
-    //if (body.length) body += '\n---\n';
-    //if (body.length) body += '\n';
-
     return {
       headline: headline,
       body: body,
@@ -261,7 +263,7 @@ module.exports = function(filename, documentElements, packageObject) {
     };
   };
 
-  for (var currentFileIndex = 0; currentFileIndex < documentElements.length; currentFileIndex++) {
+  for (var currentFileIndex = 0; currentFileIndex < sourceFileCount; currentFileIndex++) {
     var fileElements = documentElements[currentFileIndex];
     var sourceFilename = fileElements.filename;
     var sourceWhere = fileElements.where;
@@ -316,17 +318,14 @@ module.exports = function(filename, documentElements, packageObject) {
           var text = line.text;
 
           // Remove the * and posible whitespace
-          var asterisk = 0;
+          var endOfJunk = 0;
 
           // Pass by the whitespaces
-          while (text[asterisk] === ' ')
-            asterisk++;
+          while (text[endOfJunk] === ' ' || text[endOfJunk] === '*')
+            endOfJunk++;
 
-          // If the first char we hit is asterisk then remove it and whitespace
-          if (text[asterisk] === '*') text = text.substr(asterisk+1);
-
-          // Remove the first whitespace
-          if (text[0] == ' ') { text = text.substr(1)}
+          // Remove any junk
+          text = text.substr(endOfJunk);
 
           if (line.annotations) {
             doAfter = true;
@@ -342,7 +341,7 @@ module.exports = function(filename, documentElements, packageObject) {
               before += text + '\n';
             }
           } else {
-              after += '\n';
+            after += '\n';
           }
         }
 
@@ -366,7 +365,7 @@ module.exports = function(filename, documentElements, packageObject) {
           var rendered = renderAST(ast, sourceFilename);
           var text = rendered.headline;
           text += (before)? '```\n' + before + '```\n' : '';
-          text += rendered.body + after + rendered.reference + '\n-\n';
+          text += rendered.body + after + rendered.reference + '\n\n';
 
           countExported++;
           textResult += text;
@@ -393,12 +392,13 @@ module.exports = function(filename, documentElements, packageObject) {
       }
     }
     if (countExported > 0) {
-      if (fileText.length > 0) fileText += '\n\n---\n';
       if (!packageObject) {
-        // fileText += '-\n';
-        fileText += '> File: ["' + sourceFilename + '"](' + sourceFilename + ')\n';
-        fileText += '> Where: ' + '{' + sourceWhere.join('|') + '}' + '\n';
-        fileText += '\n-\n';
+        fileText += '***\n\n';
+        fileText += '__File: ["' + sourceFilename + '"](' + sourceFilename + ') ';
+        fileText += 'Where: {' + sourceWhere.join('|') + '}__\n\n***\n\n';
+        if (textResult.slice(0, 3) === '-\n\n') {
+          textResult = textResult.slice(3);
+        }
       }
       
       fileText += textResult;
@@ -406,5 +406,17 @@ module.exports = function(filename, documentElements, packageObject) {
 
   }
   console.log('Creating "' + filename + '"');
-  fs.writeFileSync(filename, fileText, 'utf8');
+  var topText = '';
+  if (packageObject && packageObject.describe) {
+    if (packageObject.describe.name) {
+      topText += '## ' + packageObject.describe.name + ' Public API ##\n\n';
+    }
+    if (packageObject.describe.summary) {
+      topText += packageObject.describe.summary + '\n\n';
+    }
+  } else {
+    topText += '## Public and Private API ##\n\n';
+  }
+  topText += '_API documentation automatically generated by [docmeteor](https://github.com/raix/docmeteor)._\n\n';
+  fs.writeFileSync(filename, topText + fileText, 'utf8');
 };
