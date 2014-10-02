@@ -1,6 +1,6 @@
 {
   "name": "docmeteor",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "preferGlobal": "true",
   "description": "Simple java like annotations + literal documentation parser for Meteor.js packages",
   "keywords": [
