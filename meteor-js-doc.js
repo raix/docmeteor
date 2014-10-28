@@ -28,7 +28,7 @@ var packageJS = {};
 if (packageFolder) {
   console.log('Package.js found, parsing...');
   // Prepare the package.js for node.js docmeteor...
-  var prependJS = 'var exportObject = { npmDepend: [] }, Npm = {depends: exportObject.npmDepend.push }; Package = {describe: function(obj) {exportObject.describe = obj;},on_use: function(fn) {exportObject.on_use = fn;},on_test: function(fn) {exportObject.on_test = fn;}};\n';
+  var prependJS = 'var exportObject = { npmDepend: [] }, Npm = {depends: exportObject.npmDepend.push }; Package = {describe: function(obj) {exportObject.describe = obj;},on_use: function(fn) {exportObject.on_use = fn;},onUse: function(fn) {exportObject.onUse = fn;},on_test: function(fn) {exportObject.on_test = fn;}};\n';
   var appendJS = '\nmodule.exports = exportObject;';
 
   var homepath = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE;
@@ -82,16 +82,21 @@ if (packageFolder) {
     add_files: function(files, where) {
       addToPackageObject('files', files, where);
     },
+    addFiles: function(files, where) {
+      addToPackageObject('files', files, where);
+    },
     export: function(symbols, where) {
       addToPackageObject('exports', symbols, where);
     },
     imply: function(packages, where) {
       addToPackageObject('imply', packages, where);
-    }
+    },
+    versionsFrom: function() { /* NOOP */ }
   };
 
   // Get the setup for usage
-  packageJS.on_use(meteorPackageApi);
+  var packageOnUse = (packageJS.on_use || packageJS.onUse);
+  packageOnUse(meteorPackageApi);
 
   packageObject.describe = packageJS.describe;
 
