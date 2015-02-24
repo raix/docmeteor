@@ -7,8 +7,9 @@ This tool is optimized code documentation for `Meteor.js` `packages` - *It looks
 Examples of docmeteor in use:
 * [Power-Queue api](https://github.com/CollectionFS/Meteor-powerqueue/blob/master/api.md)
 * [Power-Queue internal api](https://github.com/CollectionFS/Meteor-powerqueue/blob/master/internal.api.md)
-* [CollectionFS api](https://github.com/CollectionFS/Meteor-CollectionFS/blob/devel-merge/api.md)
-* [CollectionFS internal api](https://github.com/CollectionFS/Meteor-CollectionFS/blob/devel-merge/internal.api.md)
+* [CollectionFS packages](https://github.com/CollectionFS/Meteor-CollectionFS/tree/devel/packages)
+
+*In the CollectionFS you have to go into each package and checkout `api.md` or `internal.api.md` for examples*
 
 ##Installation:
 ```
