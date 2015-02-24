@@ -9,7 +9,7 @@ Examples of docmeteor in use:
 * [Power-Queue internal api](https://github.com/CollectionFS/Meteor-powerqueue/blob/master/internal.api.md)
 * [CollectionFS packages](https://github.com/CollectionFS/Meteor-CollectionFS/tree/devel/packages)
 
-*In the CollectionFS you have to go into each package and checkout `api.md` or `internal.api.md` for examples*
+*In the CollectionFS you have to go into each package and checkout `api.md` or `internal.api.md` for examples (not all packages have docs yet)*
 
 ##Installation:
 ```
