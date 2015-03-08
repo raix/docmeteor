@@ -71,20 +71,20 @@ module.exports = function(filename, documentElements, packageObject) {
             ast['@method'] && ast['@method'].name ||
             ast['@property'] && ast['@property'].name || '';
 
-    var isPrototype = false;
     var scopes = name.split('.');
     var prettyName = '';
     var classNames = [];
+    var isPrototype = (scopes.length > 1) ? scopes[scopes.length-2] == 'prototype' : false;
     for (var p = 0; p < scopes.length-1; p++) {
       if (scopes[p] !== 'prototype') {
-        if (p == 0) {
+        if (!isPrototype) {
+          prettyName += scopes[p];
+        } else if (p === 0) {
           prettyName += scopes[p].toLowerCase();
         } else {
           prettyName += scopes[p][0] + scopes[p].substr(1).toLowerCase();
         }
         classNames.push(scopes[p]);
-      } else {
-        isPrototype = true;
       }
     }
     protoName = scopes.pop();
@@ -93,8 +93,6 @@ module.exports = function(filename, documentElements, packageObject) {
     } else {
       prettyName = (prettyName)? '*' + prettyName + '*.' + protoName : name;
     }
-
-    (scopes.length > 1)? scopes[scopes.length-2] == 'prototype': false;
 
     // Title can be a method or variable?
     headline += '-\n\n' + level1 + ' ';
