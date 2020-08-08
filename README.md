@@ -1,3 +1,5 @@
+# DEPRECATED: This package is no longer maintained
+
 Doc Meteor
 ===========
 
